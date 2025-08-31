@@ -54,13 +54,13 @@ It provides a complete solution for managing products, categories, and user orde
    cd Project-repo
    cd ecommerce_api
 2. Create a virtual environment (recommended):
-
-python -m venv venv
-source venv/bin/activate   # On Windows, use `venv\Scripts\activate`
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # On Windows, use `venv\Scripts\activate`
 
 3. Install the dependencies:
-
-pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
 
 Note: If you don't have a requirements.txt file, create one with:
 
@@ -69,20 +69,21 @@ djangorestframework==3.15.1
 django-filter==24.2
 
 4. Run database migrations:
-
-python manage.py makemigrations
-python manage.py migrate
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
 
 5. Create a superuser (for admin access):
-
-python manage.py createsuperuser
+   ```bash
+   python manage.py createsuperuser
 
 6. Run the development server:
-
-python manage.py runserver
+   ```bash
+   python manage.py runserver
 
 
 The application will now be running at:
+
 👉 http://127.0.0.1:8000/
 
 | Endpoint              | HTTP Method | Description                              |
