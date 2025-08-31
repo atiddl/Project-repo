@@ -1,22 +1,95 @@
 {% extends "base.html" %}
-{% block title %}{{ product.name }}{% endblock %}
+{% block title %}Product Details{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6">
-        {% if product.image_url %}
-        <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
-        {% endif %}
-    </div>
-    <div class="col-md-6">
-        <h2>{{ product.name }}</h2>
-        <p>{{ product.description }}</p>
-        <p class="fw-bold h4">${{ product.price }}</p>
-        {% if product.stock_quantity > 0 %}
-            <span class="badge bg-success">In Stock</span>
-        {% else %}
-            <span class="badge bg-danger">Out of Stock</span>
-        {% endif %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid" style="max-height: 400px;">
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-4">{{ product.name }}</h1>
+            <p class="lead">{{ product.description }}</p>
+            <h2 class="text-success">${{ product.price }}</h2>
+            <p><strong>Category:</strong> <a href="{% url 'category_detail' product.category.id %}">{{ product.category.name }}</a></p>
+            <p><strong>In Stock:</strong> 
+                {% if product.stock_quantity > 0 %}
+                    <span class="badge bg-success">Yes</span>
+                {% else %}
+                    <span class="badge bg-danger">No</span>
+                {% endif %}
+            </p>
+
+            <div class="d-grid gap-2">
+                <button id="add-to-order-btn" class="btn btn-primary btn-lg">Add to Orders</button>
+                
+                {% if user.is_authenticated %}
+                <button id="edit-product-btn" class="btn btn-warning btn-sm" onclick="window.location.href='/products/{{ product.id }}/edit/'">Edit Product</button>
+                <button id="delete-product-btn" class="btn btn-danger btn-sm">Delete Product</button>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productId = "{{ product.id }}";
+    const csrfToken = "{{ csrf_token }}";
+
+    // Delete Product
+    const deleteButton = document.getElementById('delete-product-btn');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this product?')) {
+                fetch(`/api/products/${productId}/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrfToken }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Product deleted successfully!');
+                        window.location.href = '/products-grid/'; // Redirect
+                    } else {
+                        alert('Failed to delete product. Please try again.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    }
+
+    // Add to Order (Cart)
+    const addToOrderBtn = document.getElementById('add-to-order-btn');
+    if (addToOrderBtn) {
+        addToOrderBtn.addEventListener('click', function() {
+            // Check if the user is authenticated (e.g., via a global JS variable)
+            // For now, we'll assume the button is only visible to logged-in users.
+            fetch('/api/orders/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    product: productId,
+                    quantity: 1 // Example quantity
+                })
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 201) {
+                    alert('Product added to your order!');
+                } else if (status === 401) {
+                    alert('You must be logged in to place an order.');
+                    window.location.href = '/login/';
+                } else {
+                    alert('Failed to add product to order.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+});
+</script>
 {% endblock %}
